@@ -11,7 +11,7 @@ import random
 from bs4 import BeautifulSoup  # pip install beautifulsoup4 (http://www.crummy.com/software/BeautifulSoup/)
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import JavascriptException, TimeoutException, WebDriverException, UnexpectedAlertPresentException
+from selenium.common.exceptions import JavascriptException, TimeoutException, WebDriverException
 from ebooklib import epub  # pip install EbookLib (https://github.com/aerkalov/ebooklib)
 
 
@@ -57,27 +57,6 @@ def webdriver_get_soup(url):
         page_soup = None
 
     return page_soup
-
-
-def create_ff_profile():
-    profile_template = webdriver.FirefoxProfile()
-
-    # PERFORMANCE
-    profile_template.set_preference('browser.sessionstore.max_tabs_undo', 2)
-    profile_template.set_preference('browser.sessionhistory.max_entries', 5)
-
-    # USABILITY
-    profile_template.set_preference('media.autoplay.enabled', False)  # Disables autoplay
-    # profile_template.set_preference('dom.event.contextmenu.enabled', False)  # Don't allow websites to prevent use of right-click
-    profile_template.set_preference('dom.event.clipboardevents.enabled',
-                                    False)  # Don't let the site mess with clipboard
-    profile_template.set_preference('accessibility.blockautorefresh', True)  # Disable redirects
-
-    # If you're really hardcore about your security (JS can be used to reveal your true IP-address)
-    # Does not work disabling via script, must disable manually
-    # profile_template.set_preference('javascript.enabled', False)
-
-    return profile_template
 
 
 def decompose_locked_chapters(chapters_soup):
@@ -192,16 +171,13 @@ DEBUG_MODE = args.debug
 # --geckopath :
 GECKODRIVER_PATH = args.geckopath
 
-# Ensure that the user
+# Ensure that the user gives correct input
 if not STORY_URL:
-    sys.exit(f"Please supply an URL")
-
-if not os.path.isfile(GECKODRIVER_PATH):
+    parser.print_help()
+elif not os.path.isfile(GECKODRIVER_PATH):
     sys.exit(f"No geckodriver found")
 
-profile = create_ff_profile()
-
-driver = webdriver.Firefox(profile, executable_path=GECKODRIVER_PATH)
+driver = webdriver.Firefox(executable_path=GECKODRIVER_PATH)
 driver.set_window_size(700, 500)  # Changes the window-size, to be less intrusive
 driver.get("https://passport.webnovel.com/login.html")
 

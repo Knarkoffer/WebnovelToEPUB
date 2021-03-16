@@ -3,6 +3,6 @@ Uses Selenium to allow the user to login, and then scrapes the chapters and uses
 
 Created for my own use, with the novel Release That Witch as target, but did some generalization to enable it to download other stories as well.
 
-TODO:
-Download and add covers to epub
-Section epub in accordance with Webnovels "Volume" 
+###### TODO:
+- Download and add covers to epub
+- Section epub in accordance with Webnovels "Volume" 

@@ -1,6 +1,20 @@
 #!python3
 # coding: utf-8
 
+"""
+---------------------------------
+
+Webnovel to EPUB
+
+Version: 13
+
+Script created to transform stories from webnovel.com into .epub-files,
+to be read on my Kindle. Would usually use the otherwise excellent FanFicFare,
+but it seems to only be able to grab unlocked chapters.
+
+---------------------------------
+"""
+
 import time
 import sys
 import os
@@ -33,8 +47,6 @@ def readystate_complete(d):
 
 def webdriver_get_soup(url):
 
-    page_soup = None
-
     try:
         driver.get(url)
         time.sleep(1)
@@ -60,6 +72,7 @@ def webdriver_get_soup(url):
 
 
 def decompose_locked_chapters(chapters_soup):
+
     all_chapters = chapters_soup.findAll('a', href=True, class_="c_000 db pr clearfix pt8 pb8 pr8 pl8")
 
     debug_print(f"Total chapters: {len(all_chapters)}")
@@ -85,12 +98,11 @@ def decompose_locked_chapters(chapters_soup):
 
 
 def get_book_metadata():
+
     book_metadata = dict()
 
     bookinfo_soup = webdriver_get_soup(f"{STORY_URL}")
-    #with open('base_book.html', mode='r') as file:
-    #    bookinfo_soup = BeautifulSoup(file.read(), 'html.parser')
-    
+
     script_json = bookinfo_soup.find('script', type="application/ld+json").get_text().strip()
     bookinfo_json = ast.literal_eval(script_json)[0]
 
@@ -99,16 +111,14 @@ def get_book_metadata():
     book_metadata['Language'] = "en"
     book_metadata['ID'] = bookinfo_json['mainEntityOfPage'].split('_')[-1].rstrip('/')
 
-    #print(book_metadata)
-
     return book_metadata
 
 
-def create_epub_filename():
+def create_epub_filename(metadata):
 
     # Transforms the title and author of the book to a suiting filename
-    title_acsii = book_metadata['Title'].encode('ascii', 'ignore').decode().strip()
-    author_ascii = book_metadata['Author'].encode('ascii', 'ignore').decode().strip()
+    title_acsii = metadata['Title'].encode('ascii', 'ignore').decode().strip()
+    author_ascii = metadata['Author'].encode('ascii', 'ignore').decode().strip()
 
     output_filename = f"{title_acsii} - {author_ascii}"
     output_filename = fix_windows_filename(output_filename) + ".epub"
@@ -197,7 +207,7 @@ book.add_author(book_metadata['Author'])
 
 
 # Transforms the title and author of the book to a suiting filename
-epub_filename = create_epub_filename()
+epub_filename = create_epub_filename(book_metadata)
 
 # Starts the spine list
 book.spine = ['nav']
@@ -210,7 +220,6 @@ CACHE_PATH = None
 if SAVE_CHAPTERS:
     CACHE_PATH = os.path.join(os.getcwd(), book_metadata['ID'])
     if not os.path.isdir(CACHE_PATH):
-        print(f"Creating directory")
         os.mkdir(CACHE_PATH)
 
 allchapters_soup = webdriver_get_soup(f"{STORY_URL}/catalog")
@@ -218,24 +227,13 @@ allchapters_soup = webdriver_get_soup(f"{STORY_URL}/catalog")
 # Removes all locked chapters
 allchapters_soup = decompose_locked_chapters(allchapters_soup)
 
-
 all_chapters = allchapters_soup.find_all('a', href=True, class_="c_000 db pr clearfix pt8 pb8 pr8 pl8")
-
-#all_chapters = all_chapters[:6]
 
 print(f"Unlocked chapters: {len(all_chapters)}")
 print(f"---------------------[ 0 / {len(all_chapters)} ]---------------------")
 
 chapter_counter = 1
 for chapter in all_chapters:
-    """
-
-    if chapter_number_container:
-        chapter_number = chapter_number_container.get_text()
-    else:
-        chapter_number= "N/A"
-
-    """
 
     chapter_cached = False
 
@@ -248,8 +246,9 @@ for chapter in all_chapters:
 
     chapter_title = chapter['title']
 
-    print(f"chapter_number: {chapter_number}")
-    print(f"chapter_title: {chapter_title}")
+    print(f"Chapter Counter: {chapter_counter}")
+    print(f"Chapter Number: {chapter_number}")
+    print(f"Chapter Title: {chapter_title}")
 
     if CACHE_PATH:
         if os.path.isfile(os.path.join(CACHE_PATH, f"chapter_{chapter_counter}.html")):

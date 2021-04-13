@@ -7,4 +7,4 @@ Created for my own use, with the novel *Release That Witch* as target, but did s
 - Download and add covers to epub
 - Section epub in accordance with Webnovels "Volume" 
 
-Internal name: Project912-PYTHON-Webnovel_To_EPUB
+###### _Internal name: Project912-PYTHON-Webnovel_To_EPUB_
